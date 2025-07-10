@@ -18,13 +18,27 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
 
-    const { error } = await signIn(email, password);
-    
-    if (error) {
-      setError(error.message);
+    try {
+      console.log('Attempting sign in...');
+      const { data, error } = await signIn(email, password);
+      
+      if (error) {
+        console.error('Sign in error:', error);
+        setError(error.message);
+        setLoading(false);
+      } else if (data?.user) {
+        console.log('Sign in successful:', data.user.id);
+        // Use window.location for a full page reload to ensure auth state updates
+        window.location.href = '/generator';
+      } else {
+        console.error('No user data returned');
+        setError('Sign in failed. Please try again.');
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      setError('An unexpected error occurred. Please try again.');
       setLoading(false);
-    } else {
-      router.push('/generator');
     }
   };
 

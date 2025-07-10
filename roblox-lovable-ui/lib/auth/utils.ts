@@ -19,7 +19,7 @@ export async function signUp(email: string, password: string, username?: string)
   });
 
   if (error) {
-    return { error: { message: error.message } };
+    return { data: null, error: { message: error.message } };
   }
 
   // Manually create profile since trigger might not work
@@ -55,7 +55,7 @@ export async function signUp(email: string, password: string, username?: string)
     }
   }
 
-  return { data };
+  return { data, error: null };
 }
 
 export async function signIn(email: string, password: string) {
@@ -67,10 +67,10 @@ export async function signIn(email: string, password: string) {
   });
 
   if (error) {
-    return { error: { message: error.message } };
+    return { data: null, error: { message: error.message } };
   }
 
-  return { data };
+  return { data, error: null };
 }
 
 export async function signInWithProvider(provider: 'google' | 'github' | 'discord') {
@@ -84,10 +84,10 @@ export async function signInWithProvider(provider: 'google' | 'github' | 'discor
   });
 
   if (error) {
-    return { error: { message: error.message } };
+    return { data: null, error: { message: error.message } };
   }
 
-  return { data };
+  return { data, error: null };
 }
 
 export async function signOut() {
@@ -96,10 +96,10 @@ export async function signOut() {
   const { error } = await supabase.auth.signOut();
 
   if (error) {
-    return { error: { message: error.message } };
+    return { success: false, error: { message: error.message } };
   }
 
-  return { success: true };
+  return { success: true, error: null };
 }
 
 export async function resetPassword(email: string) {

@@ -9,6 +9,13 @@ export async function middleware(request: NextRequest) {
     },
   });
 
+  const currentPath = request.nextUrl.pathname;
+  
+  // Skip middleware for auth pages and API routes
+  if (currentPath.startsWith('/auth/') || currentPath.startsWith('/api/')) {
+    return response;
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -59,17 +66,10 @@ export async function middleware(request: NextRequest) {
 
   // Protected routes
   const protectedRoutes = ['/generator', '/projects', '/settings', '/profile'];
-  const authRoutes = ['/auth/login', '/auth/signup'];
-  const currentPath = request.nextUrl.pathname;
 
   // If user is not authenticated and trying to access protected route
   if (!user && protectedRoutes.some(route => currentPath.startsWith(route))) {
     return NextResponse.redirect(new URL('/auth/login', request.url));
-  }
-
-  // If user is authenticated and trying to access auth routes
-  if (user && authRoutes.some(route => currentPath.startsWith(route))) {
-    return NextResponse.redirect(new URL('/generator', request.url));
   }
 
   // Legacy project cookie check - still redirect authenticated users with projects

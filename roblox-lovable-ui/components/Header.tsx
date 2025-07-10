@@ -27,8 +27,16 @@ export default function Header() {
   };
 
   const handleSignOut = async () => {
-    await signOut();
-    router.push('/');
+    try {
+      console.log('Signing out...');
+      await signOut();
+      // Force reload to clear any cached state
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Sign out error:', error);
+      // Force logout even on error
+      window.location.href = '/force-logout';
+    }
   };
 
   // Close user menu when clicking outside

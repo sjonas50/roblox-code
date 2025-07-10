@@ -32,10 +32,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Check active sessions and sets the user
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
-        loadProfile();
+        setUser(session.user);
+        await loadProfile();
+      } else {
+        setUser(null);
       }
       setLoading(false);
     });
@@ -43,11 +45,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for changes on auth state
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setUser(session?.user ?? null);
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, session?.user?.id);
+      
       if (session?.user) {
+        setUser(session.user);
         await loadProfile();
+        
+        // Only validate on SIGNED_IN events after initial load
+        if (event === 'SIGNED_IN') {
+          // Give time for profile to be created
+          setTimeout(async () => {
+            const { data: profileExists } = await supabase
+              .from('profiles')
+              .select('id')
+              .eq('id', session.user.id)
+              .single();
+            
+            if (!profileExists) {
+              console.log('Profile not found after sign in, may need to refresh');
+            }
+          }, 2000);
+        }
       } else {
+        setUser(null);
         setProfile(null);
       }
       setLoading(false);
@@ -62,9 +83,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setProfile(null);
+    try {
+      // Sign out from Supabase
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Supabase signOut error:', error);
+      }
+      
+      // Clear local state
+      setUser(null);
+      setProfile(null);
+      
+      // Clear any cached data
+      localStorage.removeItem('supabase.auth.token');
+      sessionStorage.clear();
+      
+    } catch (error) {
+      console.error('SignOut error:', error);
+      // Even on error, clear local state
+      setUser(null);
+      setProfile(null);
+    }
   };
 
   const refreshProfile = async () => {
