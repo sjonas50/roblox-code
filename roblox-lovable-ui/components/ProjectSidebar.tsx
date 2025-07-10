@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Project, Script } from "@/types/project";
-import { ProjectStorageService } from "@/services/projectStorage";
+import { StorageAdapter } from "@/services/storageAdapter";
 
 interface ProjectSidebarProps {
   currentProject: Project | null;
@@ -37,13 +37,13 @@ export default function ProjectSidebar({
     }
   }, [currentProject]);
 
-  const loadProjects = () => {
-    const allProjects = ProjectStorageService.getAllProjects();
+  const loadProjects = async () => {
+    const allProjects = await StorageAdapter.getAllProjects();
     setProjects(allProjects);
   };
 
-  const loadProjectScripts = (projectId: string) => {
-    const projectScripts = ProjectStorageService.getProjectScripts(projectId);
+  const loadProjectScripts = async (projectId: string) => {
+    const projectScripts = await StorageAdapter.getProjectScripts(projectId);
     setScripts(projectScripts);
   };
 

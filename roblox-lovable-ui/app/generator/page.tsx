@@ -10,9 +10,11 @@ import MultiAgentProgress from "@/components/MultiAgentProgress";
 import ProjectDashboard from "@/components/ProjectDashboard";
 import WelcomeScreen from "@/components/WelcomeScreen";
 import { RobloxTask, AgentProgress } from "@/utils/multiAgentOrchestrator";
-import { ProjectStorageService } from "@/services/projectStorage";
+import { StorageAdapter } from "@/services/storageAdapter";
+import { useMigration } from "@/hooks/useMigration";
 
 export default function GeneratorPage() {
+  const { migrationStatus } = useMigration();
   const [showWelcome, setShowWelcome] = useState(true);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -28,20 +30,24 @@ export default function GeneratorPage() {
 
   useEffect(() => {
     // Check if user has existing projects or a current project
-    const projects = ProjectStorageService.getAllProjects();
-    const savedProjectId = ProjectStorageService.getCurrentProjectId();
+    const checkProjects = async () => {
+      const projects = await StorageAdapter.getAllProjects();
+      const savedProjectId = StorageAdapter.getCurrentProjectId();
+      
+      if (savedProjectId || projects.length > 0) {
+        setShowWelcome(false);
+        setCurrentProjectId(savedProjectId);
+      }
+    };
     
-    if (savedProjectId || projects.length > 0) {
-      setShowWelcome(false);
-      setCurrentProjectId(savedProjectId);
-    }
-  }, []);
+    checkProjects();
+  }, [migrationStatus]);
 
   const handleWelcomeComplete = (projectId?: string) => {
     setShowWelcome(false);
     if (projectId) {
       setCurrentProjectId(projectId);
-      ProjectStorageService.setCurrentProject(projectId);
+      StorageAdapter.setCurrentProject(projectId);
     }
   };
 
@@ -248,6 +254,19 @@ export default function GeneratorPage() {
       console.log('  ❌ Code is empty or whitespace only');
     }
   };
+
+  // Show migration loading state
+  if (migrationStatus === 'pending') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-white mb-2">Setting up your workspace...</h2>
+          <p className="text-gray-400">Migrating your projects to the cloud</p>
+        </div>
+      </div>
+    );
+  }
 
   if (showWelcome) {
     return <WelcomeScreen onComplete={handleWelcomeComplete} />;

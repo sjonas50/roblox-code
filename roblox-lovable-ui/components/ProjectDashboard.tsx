@@ -215,7 +215,6 @@ export default function ProjectDashboard({
                 <TextInput
                   onGenerate={(prompt) => handleGenerate(prompt, currentScript.type)}
                   isGenerating={isGenerating}
-                  defaultScriptType={currentScript.type}
                 />
               </div>
 

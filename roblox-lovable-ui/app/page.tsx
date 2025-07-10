@@ -3,8 +3,10 @@
 import Link from "next/link";
 import PublicLayout from "@/components/PublicLayout";
 import GradientBackground from "@/components/GradientBackground";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function HomePage() {
+  const { user, loading } = useAuth();
   const features = [
     {
       icon: "🤖",
@@ -59,10 +61,10 @@ export default function HomePage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link
-                  href="/generator"
+                  href={user ? "/generator" : "/auth/signup"}
                   className="px-8 py-4 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-lg font-semibold hover:from-orange-600 hover:to-pink-600 transition-all transform hover:scale-105"
                 >
-                  Start Creating
+                  {user ? "Open Generator" : "Start Creating"}
                 </Link>
                 <Link
                   href="/how-to-use"
@@ -149,10 +151,10 @@ export default function HomePage() {
                 Join thousands of creators using AI to build Roblox games faster than ever.
               </p>
               <Link
-                href="/generator"
+                href={user ? "/generator" : "/auth/signup"}
                 className="inline-block px-8 py-4 bg-white text-gray-900 rounded-lg font-semibold hover:bg-gray-100 transition-colors transform hover:scale-105"
               >
-                Start Building Now
+                {user ? "Go to Generator" : "Start Building Now"}
               </Link>
             </div>
           </section>

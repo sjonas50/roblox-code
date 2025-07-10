@@ -56,18 +56,6 @@ export class EnhancedRobloxGenerator {
       const result = await generateRobloxCode(enhancedPrompt, {
         ...options,
         customSystemPrompt: this.buildSystemPromptWithTools(options, toolsConfig),
-        onMessage: (message: string) => {
-          // Store assistant messages in session
-          session!.messages.push({
-            role: 'assistant',
-            content: message,
-            timestamp: new Date()
-          });
-          
-          if (options.onMessage) {
-            options.onMessage(message);
-          }
-        }
       }, context);
 
       // Update session with results
@@ -199,10 +187,7 @@ Core capabilities:
   // Export session data for persistence
   exportSessions(): string {
     const data = {
-      sessions: Array.from(this.sessions.entries()).map(([id, session]) => ({
-        id,
-        ...session
-      })),
+      sessions: Array.from(this.sessions.values()),
       exportedAt: new Date()
     };
     return JSON.stringify(data, null, 2);

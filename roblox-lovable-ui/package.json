@@ -14,11 +14,16 @@
   "description": "",
   "dependencies": {
     "@anthropic-ai/claude-code": "^1.0.44",
+    "@supabase/auth-ui-react": "^0.4.7",
+    "@supabase/auth-ui-shared": "^0.1.8",
+    "@supabase/ssr": "^0.6.1",
+    "@supabase/supabase-js": "^2.50.5",
     "@types/luaparse": "^0.2.12",
     "@types/node": "^24.0.12",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@types/react-syntax-highlighter": "^15.5.13",
+    "@types/uuid": "^10.0.0",
     "autoprefixer": "^10.4.21",
     "luaparse": "^0.3.1",
     "next": "^15.3.5",
@@ -29,6 +34,7 @@
     "react-syntax-highlighter": "^15.6.1",
     "roblox-claude-codegen": "file:../roblox-claude-codegen",
     "tailwindcss": "^3.4.17",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "uuid": "^11.1.0"
   }
 }
