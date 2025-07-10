@@ -25,6 +25,7 @@
     "postcss": "^8.5.6",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-markdown": "^9.0.1",
     "react-syntax-highlighter": "^15.6.1",
     "roblox-claude-codegen": "file:../roblox-claude-codegen",
     "tailwindcss": "^3.4.17",

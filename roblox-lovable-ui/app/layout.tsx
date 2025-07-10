@@ -5,8 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Roblox Studio AI - Build Games with AI",
-  description: "Create Roblox games by describing what you want. AI-powered Roblox Studio development.",
+  title: "Roblox Code Generator - AI-Powered Game Development",
+  description: "Create professional Roblox scripts using natural language. Build games faster with AI-powered code generation, templates, and tutorials.",
 };
 
 export default function RootLayout({
