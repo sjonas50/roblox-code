@@ -358,15 +358,31 @@ export default function Home() {
   };
 
   const handleCodeUpdate = (newCode: string, description?: string) => {
-    console.log('Updating code from chat, length:', newCode?.length || 0);
+    console.log('🔄 handleCodeUpdate called:');
+    console.log('  - New code length:', newCode?.length || 0);
+    console.log('  - Description:', description);
+    console.log('  - Current code length:', generatedCode?.length || 0);
+    
     if (newCode && newCode.trim()) {
+      console.log('  ✅ Setting new generated code');
+      // First update the code
       setGeneratedCode(newCode);
-      // Force a re-render by updating messages
-      setMessages(prev => [...prev, {
-        type: 'success',
-        content: description || 'Code updated successfully!',
-        timestamp: new Date()
-      }]);
+      
+      // Then add the success message with a small delay to ensure proper ordering
+      setTimeout(() => {
+        const successMessage = {
+          type: 'success',
+          content: description || 'Code updated successfully!',
+          timestamp: new Date()
+        };
+        console.log('  📝 Adding success message:', successMessage.content);
+        setMessages(prev => {
+          console.log('  📊 Previous messages count:', prev.length);
+          return [...prev, successMessage];
+        });
+      }, 100); // Small delay to ensure code update happens first
+    } else {
+      console.log('  ❌ Code is empty or whitespace only');
     }
   };
 

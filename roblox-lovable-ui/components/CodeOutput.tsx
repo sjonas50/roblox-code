@@ -18,6 +18,13 @@ interface CodeOutputProps {
 }
 
 export default function CodeOutput({ code, filename, isGenerating, messages, scriptType = 'server', prompt = '' }: CodeOutputProps) {
+  console.log('🎬 CodeOutput component rendered with:');
+  console.log('  - code length:', code?.length || 0);
+  console.log('  - filename:', filename);
+  console.log('  - isGenerating:', isGenerating);
+  console.log('  - messages count:', messages.length);
+  console.log('  - scriptType:', scriptType);
+  
   const [activeTab, setActiveTab] = useState<'code' | 'logs' | 'tutorial'>('code');
   const [copied, setCopied] = useState(false);
   const [tutorial, setTutorial] = useState<Tutorial | null>(null);
@@ -38,10 +45,25 @@ export default function CodeOutput({ code, filename, isGenerating, messages, scr
   
   // Create new version when code changes
   useEffect(() => {
+    console.log('🔄 CodeOutput useEffect triggered:');
+    console.log('  - Code prop length:', code?.length || 0);
+    console.log('  - Code prop first 100 chars:', code?.substring(0, 100));
+    console.log('  - Current versions count:', versions.length);
+    console.log('  - Messages count:', messages.length);
+    
     if (code && code.trim()) {
       // Check if this is a new version (not already in versions)
       const lastVersion = versions[versions.length - 1];
+      console.log('  - Last version code length:', lastVersion?.code?.length || 0);
+      console.log('  - Codes are equal?', lastVersion?.code === code);
+      
       if (!lastVersion || lastVersion.code !== code) {
+        console.log('  ✅ Creating new version', versions.length + 1);
+        
+        // Get description from latest message
+        const latestMessage = messages[messages.length - 1];
+        console.log('  - Latest message:', latestMessage?.content);
+        
         const newVersion: CodeVersion = {
           id: Date.now().toString(),
           version: versions.length + 1,
@@ -49,15 +71,26 @@ export default function CodeOutput({ code, filename, isGenerating, messages, scr
           timestamp: new Date(),
           description: versions.length === 0 
             ? `Initial ${scriptType} script generation` 
-            : messages.length > 0 && messages[messages.length - 1]?.content 
-              ? messages[messages.length - 1].content 
-              : 'Updated via chat',
+            : latestMessage?.content || 'Updated via chat',
           source: versions.length === 0 ? 'initial' : 'chat'
         };
         
-        setVersions(prev => [...prev, newVersion]);
+        console.log('  💾 New version details:', {
+          id: newVersion.id,
+          version: newVersion.version,
+          codeLength: newVersion.code.length,
+          description: newVersion.description,
+          source: newVersion.source
+        });
+        
+        setVersions(prev => {
+          console.log('  📊 Setting versions, previous count:', prev.length);
+          return [...prev, newVersion];
+        });
         setCurrentVersionId(newVersion.id);
         setDisplayCode(code);
+      } else {
+        console.log('  ⚠️ Skipping version creation - code unchanged');
       }
       
       // Validate the code
@@ -70,8 +103,10 @@ export default function CodeOutput({ code, filename, isGenerating, messages, scr
       if (!result.isValid) {
         setShowErrors(true);
       }
+    } else {
+      console.log('  ❌ Code is empty or whitespace only');
     }
-  }, [code, scriptType, versions.length]);
+  }, [code, scriptType, versions, messages]);
 
   const getCurrentVersionCode = () => {
     const currentVersion = versions.find(v => v.id === currentVersionId);
@@ -301,7 +336,7 @@ export default function CodeOutput({ code, filename, isGenerating, messages, scr
                     <span className="text-gray-600 dark:text-gray-400">Generating Roblox code...</span>
                   </div>
                 </div>
-              ) : versions.length > 0 ? (
+              ) : (versions.length > 0 || code) ? (
                 <CodeVersionControl
                   versions={versions}
                   currentVersionId={currentVersionId}

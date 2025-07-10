@@ -12,28 +12,49 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
     }
 
+    // Analyze user intent
+    const isQuestion = message.match(/\b(how|what|why|where|when|can|should|is|are|do|does|explain|tell)\b/i);
+    const isErrorReport = message.toLowerCase().includes('error') || message.includes('ServerScriptService') || message.includes('attempt to') || message.includes('nil');
+    const requestsChange = message.match(/\b(make|add|change|update|modify|fix|create|implement|remove|delete|replace)\b/i);
+    
     // Create a context-aware prompt
     let enhancedPrompt = '';
+    let shouldGenerateCode = false;
     
     // Check if we have existing code
     if (currentCode && currentCode.trim()) {
-      enhancedPrompt = `You are helping improve a Roblox ${scriptType} script. `;
+      enhancedPrompt = `You are a helpful Roblox development assistant. The user has a ${scriptType} script they generated. `;
       enhancedPrompt += `Original request: "${originalPrompt}". `;
       enhancedPrompt += `\n\nCurrent code:\n\`\`\`lua\n${currentCode}\n\`\`\`\n\n`;
       
-      // Check if the message contains an error
-      if (message.toLowerCase().includes('error') || message.includes('ServerScriptService') || message.includes('attempt to') || message.includes('nil')) {
+      if (isErrorReport) {
+        // User reporting an error - fix the code
         enhancedPrompt += `The user encountered this error: "${message}". Please analyze the error and provide a fixed version of the code. Explain what caused the error and how you fixed it.`;
-      } else {
+        shouldGenerateCode = true;
+      } else if (requestsChange && !isQuestion) {
+        // User wants to modify the code
         enhancedPrompt += `User request: "${message}". Please modify the code according to this request and explain the changes.`;
+        shouldGenerateCode = true;
+      } else {
+        // User is asking a question - don't modify code
+        enhancedPrompt += `User question: "${message}". Answer their question about the code, Roblox development, or implementation. Do NOT generate new code unless explicitly asked. Provide helpful guidance and explanations.`;
+        shouldGenerateCode = false;
       }
     } else {
-      // No existing code - this is a new generation request
-      enhancedPrompt = `Generate a Roblox ${scriptType} script based on this request: "${message}". `;
-      if (originalPrompt && originalPrompt !== message) {
-        enhancedPrompt += `Context: The user originally tried to generate: "${originalPrompt}" but it was too complex. `;
+      // No existing code
+      if (requestsChange || !isQuestion) {
+        // User wants to generate code
+        enhancedPrompt = `Generate a Roblox ${scriptType} script based on this request: "${message}". `;
+        if (originalPrompt && originalPrompt !== message) {
+          enhancedPrompt += `Context: The user originally tried to generate: "${originalPrompt}" but it was too complex. `;
+        }
+        enhancedPrompt += `Keep the implementation simple and focused. Explain your approach.`;
+        shouldGenerateCode = true;
+      } else {
+        // User is asking a general question
+        enhancedPrompt = `You are a helpful Roblox development assistant. User question: "${message}". Answer their question about Roblox development, scripting, or Studio usage. Provide helpful guidance without generating code unless explicitly asked.`;
+        shouldGenerateCode = false;
       }
-      enhancedPrompt += `Keep the implementation simple and focused. Explain your approach.`;
     }
 
     // Add conversation history for context
@@ -47,10 +68,29 @@ export async function POST(request: NextRequest) {
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          // Send initial message
+          // Send initial message with intent analysis
+          let initialMessage = '';
+          if (currentCode && currentCode.trim()) {
+            if (isQuestion && !requestsChange) {
+              initialMessage = '💬 I understand you have a question. Let me help explain without modifying your code...\n\n';
+            } else if (isErrorReport) {
+              initialMessage = '🔧 I see you\'re reporting an error. Let me analyze and fix it for you...\n\n';
+            } else if (requestsChange) {
+              initialMessage = '✏️ I\'ll help you modify the code as requested...\n\n';
+            } else {
+              initialMessage = 'Let me analyze your request and help you...\n\n';
+            }
+          } else {
+            if (isQuestion && !requestsChange) {
+              initialMessage = '💬 I\'ll answer your question about Roblox development...\n\n';
+            } else {
+              initialMessage = '🚀 Let me help you generate the code...\n\n';
+            }
+          }
+          
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
             type: 'message', 
-            content: 'Let me analyze your code and help you fix the sword positioning...\n\n' 
+            content: initialMessage
           })}\n\n`));
 
           // Generate improved code
@@ -67,6 +107,14 @@ export async function POST(request: NextRequest) {
               }
             }
           };
+          
+          console.log('🤖 Chat intent analysis:', {
+            isQuestion,
+            isErrorReport,
+            requestsChange,
+            shouldGenerateCode,
+            messageLength: message.length
+          });
 
           const context = {
             gameType: 'other' as const,
@@ -107,9 +155,13 @@ export async function POST(request: NextRequest) {
             }
           }
 
-          // Extract code from the result
-          if (result.success && result.files.length > 0) {
+          // Extract code from the result only if we should generate code
+          if (shouldGenerateCode && result.success && result.files.length > 0) {
             const { content, path } = result.files[0];
+            console.log('🚀 Chat API: Sending code update');
+            console.log('  - Code length:', content?.length || 0);
+            console.log('  - Filename:', path);
+            console.log('  - First 100 chars:', content?.substring(0, 100));
             
             // Send the updated code
             controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
@@ -142,15 +194,19 @@ export async function POST(request: NextRequest) {
               }
             }
 
-            if (extractedCode) {
+            if (shouldGenerateCode && extractedCode) {
+              console.log('🚀 Chat API: Sending extracted code');
+              console.log('  - Code length:', extractedCode?.length || 0);
+              console.log('  - First 100 chars:', extractedCode?.substring(0, 100));
+              
               // Send the extracted code
               controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
                 type: 'code', 
                 code: extractedCode,
                 filename: 'script.lua'
               })}\n\n`));
-            } else {
-              // If generation failed, send error
+            } else if (shouldGenerateCode) {
+              // If generation failed and we were trying to generate code, send error
               const errorMessage = result.errors?.join('\n') || 'Failed to generate code. Try a simpler request.';
               controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
                 type: 'error', 

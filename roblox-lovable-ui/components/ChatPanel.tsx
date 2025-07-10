@@ -45,8 +45,8 @@ export default function ChatPanel({
       // Add initial message when panel opens
       const hasCode = currentCode && currentCode.trim().length > 0;
       const initialMessage = hasCode 
-        ? `I can help you improve your ${scriptType} script or fix any errors. You can:\n\n• Ask me to modify the code\n• Paste error messages from Roblox Studio\n• Request new features or changes\n• Ask for explanations\n\nWhat would you like me to help with?`
-        : `I see you're trying to generate code. I can help you:\n\n• Break down complex requests into simpler parts\n• Generate code step by step\n• Fix any errors you encounter\n\nWhat would you like to create? Try starting with something simple, like "Create a part that changes color when touched"`;
+        ? `I'm your Roblox development assistant! I can help you with:\n\n📖 **Questions & Guidance**\n• How to implement this code in Roblox Studio\n• Where to place scripts (ServerScriptService, StarterGui, etc.)\n• How to test and debug your scripts\n• Best practices and tips\n\n🔧 **Code Modifications**\n• Add new features (just describe what you want)\n• Fix errors (paste error messages from Studio)\n• Optimize or improve the code\n• Explain how the code works\n\nWhat would you like help with?`
+        : `I'm your Roblox development assistant! I can help you:\n\n🎮 **Generate Code**\n• Create scripts for game mechanics\n• Build UI systems and GUIs\n• Implement player controls\n• Add special effects and animations\n\n📚 **Answer Questions**\n• How to use Roblox Studio\n• Where to place different script types\n• Best practices for Roblox development\n• Troubleshooting common issues\n\nWhat would you like to create or learn about?`;
         
       setMessages([{
         id: Date.now().toString(),
@@ -101,6 +101,7 @@ export default function ChatPanel({
       let assistantMessage = "";
       let updatedCode = "";
       let codeDescription = "";
+      let hasCodeUpdate = false;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -140,22 +141,21 @@ export default function ChatPanel({
                   
                 case 'code':
                   updatedCode = data.code;
-                  console.log('Chat received code update:', data.code?.length || 0, 'characters');
+                  console.log('📦 Chat received code update:');
+                  console.log('  - Code length:', data.code?.length || 0, 'characters');
+                  console.log('  - First 100 chars:', data.code?.substring(0, 100));
+                  
                   if (data.code && data.code.trim()) {
+                    hasCodeUpdate = true;
                     // Extract a description from the user's message
                     codeDescription = userMessage.content.length > 50 
                       ? userMessage.content.substring(0, 50) + '...'
                       : userMessage.content;
                     
+                    console.log('  🚀 Calling onCodeUpdate with description:', `Chat fix: ${codeDescription}`);
                     onCodeUpdate(data.code, `Chat fix: ${codeDescription}`);
-                    
-                    // Add success message to chat
-                    setMessages(prev => [...prev, {
-                      id: Date.now().toString(),
-                      role: 'assistant',
-                      content: '✅ Code updated! The fixed version is now displayed in Version ' + (prev.filter(m => m.role === 'assistant').length + 1) + '.',
-                      timestamp: new Date()
-                    }]);
+                  } else {
+                    console.log('  ⚠️ Code is empty or whitespace only');
                   }
                   break;
                   
@@ -173,6 +173,18 @@ export default function ChatPanel({
             }
           }
         }
+      }
+      
+      // Only add code update success message if code was actually updated
+      if (hasCodeUpdate) {
+        const successMsg = {
+          id: Date.now().toString() + '-success',
+          role: 'assistant' as const,
+          content: '✅ Code updated! The changes are now displayed in Version ' + (messages.filter(m => m.role === 'assistant').length + 1) + '.',
+          timestamp: new Date()
+        };
+        console.log('  💬 Adding code update success message');
+        setMessages(prev => [...prev, successMsg]);
       }
     } catch (error) {
       console.error("Chat error:", error);
