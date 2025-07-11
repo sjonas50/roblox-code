@@ -12,7 +12,7 @@ export async function signInWithTimeout(
   const supabase = createClient();
   
   // Create a timeout promise
-  const timeoutPromise = new Promise<{ data: null; error: { message: string } }>((resolve) => {
+  const timeoutPromise = new Promise<{ data: null; error: { message: string; code?: string } }>((resolve) => {
     setTimeout(() => {
       resolve({ 
         data: null, 
@@ -32,7 +32,7 @@ export async function signInWithTimeout(
     ]);
 
     // If we got a timeout, check if authentication actually succeeded
-    if (result.error?.code === 'TIMEOUT') {
+    if (result.error && 'code' in result.error && result.error.code === 'TIMEOUT') {
       // Give it a moment for the auth state to settle
       await new Promise(resolve => setTimeout(resolve, 500));
       

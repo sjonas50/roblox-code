@@ -140,13 +140,13 @@ export function createDirectClient(): DirectSupabaseClient {
           
           if (response.ok) {
             const data = await response.json();
-            return { data, error: null };
+            return { data: Array.isArray(data) ? data : [data], error: null };
           } else {
             const error = await response.json();
-            return { data: null, error };
+            return { data: [], error };
           }
         } catch (error) {
-          return { data: null, error: { message: error instanceof Error ? error.message : 'Unknown error' } };
+          return { data: [], error: { message: error instanceof Error ? error.message : 'Unknown error' } };
         }
       },
 
