@@ -123,6 +123,27 @@ roblox-lovable-ui/
 
 See `CLAUDE.md` for detailed configuration options and multi-agent orchestration details.
 
+## Troubleshooting
+
+### Common Issues
+
+1. **Static Asset 404 Errors**
+   - Run `./restart.sh` to clean caches and restart the server
+   - Or manually: `rm -rf .next node_modules/.cache && npm run dev`
+
+2. **Database Connection Issues**
+   - Visit http://localhost:3000/test-db to run database diagnostics
+   - Check console for detailed error messages
+   - Verify Supabase environment variables in `.env.local`
+
+3. **Authentication Issues**
+   - Visit http://localhost:3000/force-logout to completely clear auth state
+   - Check if user exists in Supabase dashboard
+
+4. **Server Already Running**
+   - Use `./restart.sh` to kill existing process and restart
+   - Or manually: `lsof -ti:3000 | xargs kill -9`
+
 ## Contributing
 
 1. Fork the repository
