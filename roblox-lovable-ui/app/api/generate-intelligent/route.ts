@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { IntelligentOrchestrator } from '@/utils/intelligentOrchestrator';
 import type { RobloxScriptType } from 'roblox-claude-codegen';
+import { ensureApiKey } from '@/lib/utils/api-key';
 
 export async function POST(request: NextRequest) {
   console.log('🧠 Intelligent generation API route called');
   
-  // Check for API key
-  if (!process.env.ANTHROPIC_API_KEY) {
-    console.error('❌ ANTHROPIC_API_KEY not found in environment');
+  // Ensure API key is available
+  const apiKey = ensureApiKey();
+  if (!apiKey) {
     return NextResponse.json(
-      { error: 'API key not configured. Please set ANTHROPIC_API_KEY in .env.local' },
+      { error: 'API key not configured. Please set CLAUDE_API_KEY in environment variables' },
       { status: 500 }
     );
   }
@@ -77,7 +78,7 @@ export async function POST(request: NextRequest) {
           const result = await orchestrator.orchestrate(
             prompt,
             scriptType as RobloxScriptType,
-            process.env.ANTHROPIC_API_KEY!
+            apiKey
           );
 
           if (!isStreamClosed) {

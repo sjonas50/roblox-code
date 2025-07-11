@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateRobloxCode } from 'roblox-claude-codegen';
 import type { SDKMessage } from '@anthropic-ai/claude-code';
+import { ensureApiKey } from '@/lib/utils/api-key';
 
 export async function POST(request: NextRequest) {
   console.log('📥 API route called - generate');
   
-  // Check for API key
-  if (!process.env.ANTHROPIC_API_KEY) {
-    console.error('❌ ANTHROPIC_API_KEY not found in environment');
+  // Ensure API key is available
+  const apiKey = ensureApiKey();
+  if (!apiKey) {
     return NextResponse.json(
-      { error: 'API key not configured. Please set ANTHROPIC_API_KEY in .env.local' },
+      { error: 'API key not configured. Please set CLAUDE_API_KEY in environment variables' },
       { status: 500 }
     );
   }
@@ -47,7 +48,8 @@ export async function POST(request: NextRequest) {
           console.log('🚀 Calling generateRobloxCode...');
           console.log('📌 Environment check:', {
             hasApiKey: !!process.env.ANTHROPIC_API_KEY,
-            apiKeyLength: process.env.ANTHROPIC_API_KEY?.length
+            apiKeyLength: process.env.ANTHROPIC_API_KEY?.length,
+            usingClaudeKey: !!process.env.CLAUDE_API_KEY
           });
           
           try {

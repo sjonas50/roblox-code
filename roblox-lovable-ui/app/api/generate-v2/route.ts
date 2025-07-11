@@ -1,9 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { spawn } from 'child_process';
 import * as path from 'path';
+import { ensureApiKey } from '@/lib/utils/api-key';
 
 export async function POST(request: NextRequest) {
   console.log('📥 API route v2 called - using subprocess approach');
+  
+  // Ensure API key is available
+  const apiKey = ensureApiKey();
+  if (!apiKey) {
+    return NextResponse.json(
+      { error: 'API key not configured. Please set CLAUDE_API_KEY in environment variables' },
+      { status: 500 }
+    );
+  }
   
   try {
     const body = await request.json();

@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query, type SDKMessage } from "@anthropic-ai/claude-code";
+import { ensureApiKey } from '@/lib/utils/api-key';
 
 export async function POST(request: NextRequest) {
   console.log('📥 Direct Claude Code SDK API route');
   
-  // Check for API key
-  if (!process.env.ANTHROPIC_API_KEY) {
-    console.error('❌ ANTHROPIC_API_KEY not found');
+  // Ensure API key is available
+  const apiKey = ensureApiKey();
+  if (!apiKey) {
     return NextResponse.json(
-      { error: 'API key not configured' },
+      { error: 'API key not configured. Please set CLAUDE_API_KEY in environment variables' },
       { status: 500 }
     );
   }

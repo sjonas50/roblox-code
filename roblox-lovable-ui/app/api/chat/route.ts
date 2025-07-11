@@ -1,9 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateRobloxCode } from 'roblox-claude-codegen';
 import { RobloxScriptType } from 'roblox-claude-codegen';
+import { ensureApiKey } from '@/lib/utils/api-key';
 
 export async function POST(request: NextRequest) {
   const encoder = new TextEncoder();
+  
+  // Ensure API key is available
+  const apiKey = ensureApiKey();
+  if (!apiKey) {
+    return NextResponse.json(
+      { error: 'API key not configured. Please set CLAUDE_API_KEY in environment variables' },
+      { status: 500 }
+    );
+  }
   
   try {
     const { message, currentCode, scriptType, originalPrompt, conversationHistory } = await request.json();
@@ -95,7 +105,7 @@ export async function POST(request: NextRequest) {
 
           // Generate improved code
           const options = {
-            apiKey: process.env.ANTHROPIC_API_KEY!,
+            apiKey: process.env.ANTHROPIC_API_KEY!, // Already set by ensureApiKey
             scriptType: scriptType as RobloxScriptType,
             onMessage: (message: string) => {
               // Don't send empty messages

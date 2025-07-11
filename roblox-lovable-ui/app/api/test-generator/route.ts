@@ -1,13 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateRobloxCode } from 'roblox-claude-codegen';
+import { ensureApiKey } from '@/lib/utils/api-key';
 
 // Simple test route to debug the generator
 export async function GET(request: NextRequest) {
   console.log('🧪 Test route called');
+  
+  // Ensure API key is available
+  const apiKey = ensureApiKey();
+  if (!apiKey) {
+    return NextResponse.json(
+      { error: 'API key not configured. Please set CLAUDE_API_KEY in environment variables' },
+      { status: 500 }
+    );
+  }
+  
   console.log('🔑 API Key check:', {
-    hasKey: !!process.env.ANTHROPIC_API_KEY,
-    keyLength: process.env.ANTHROPIC_API_KEY?.length,
-    firstChars: process.env.ANTHROPIC_API_KEY?.substring(0, 10) + '...'
+    hasKey: !!apiKey,
+    keyLength: apiKey.length,
+    firstChars: apiKey.substring(0, 10) + '...'
   });
 
   try {
