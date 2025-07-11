@@ -64,6 +64,61 @@ See individual project READMEs for detailed documentation:
 - [UI Documentation](./roblox-lovable-ui/README.md)
 - [Configuration Guide](./CLAUDE.md)
 
+## Deployment
+
+### Deploying to Vercel
+
+1. **Fork or Clone this Repository**
+   ```bash
+   git clone https://github.com/sjonas50/roblox-code.git
+   ```
+
+2. **Install Vercel CLI** (optional but recommended)
+   ```bash
+   npm i -g vercel
+   ```
+
+3. **Deploy to Vercel**
+   
+   **Option A: Using Vercel Dashboard**
+   - Go to [vercel.com](https://vercel.com)
+   - Click "New Project"
+   - Import your Git repository
+   - Vercel will auto-detect the monorepo structure
+   - Set the following environment variables:
+     - `CLAUDE_API_KEY` - Your Anthropic API key
+     - `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
+     - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anon key
+     - `SUPABASE_SERVICE_ROLE_KEY` - (Optional) Your Supabase service role key
+   - Deploy!
+
+   **Option B: Using Vercel CLI**
+   ```bash
+   vercel
+   ```
+   Follow the prompts and set environment variables when asked.
+
+4. **Environment Variables**
+   
+   Required variables:
+   - `CLAUDE_API_KEY` - Get from [console.anthropic.com](https://console.anthropic.com/)
+   - `NEXT_PUBLIC_SUPABASE_URL` - From your Supabase project settings
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - From your Supabase project settings
+   
+   Optional:
+   - `SUPABASE_SERVICE_ROLE_KEY` - For server-side operations
+
+### Build Configuration
+
+The project is configured as a monorepo with:
+- Root build command: `npm run build`
+- Output directory: `roblox-lovable-ui/.next`
+- Framework: Next.js
+
+The build process:
+1. Builds the `roblox-claude-codegen` backend package
+2. Builds the `roblox-lovable-ui` frontend that depends on it
+
 ## License
 
 MIT License - see LICENSE file for details
