@@ -6,16 +6,20 @@ import { createClient } from '@/lib/supabase/client';
 export default function TestDatabasePage() {
   const [status, setStatus] = useState<any>({});
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log('TestDatabasePage mounted');
     testDatabase();
   }, []);
 
   const testDatabase = async () => {
-    const supabase = createClient();
-    const results: any = {};
-
+    console.log('Starting database tests...');
+    setError(null);
+    
     try {
+      const supabase = createClient();
+      const results: any = {};
       // Test 1: Check authentication
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       results.auth = {
@@ -108,9 +112,12 @@ export default function TestDatabasePage() {
         }
       }
     } catch (error) {
+      console.error('Test database error:', error);
       results.generalError = error instanceof Error ? error.message : 'Unknown error';
+      setError(error instanceof Error ? error.message : 'Unknown error occurred');
     }
 
+    console.log('Test results:', results);
     setStatus(results);
     setLoading(false);
   };
@@ -119,23 +126,37 @@ export default function TestDatabasePage() {
     <div className="min-h-screen bg-gray-900 text-white p-8">
       <h1 className="text-2xl font-bold mb-6">Database Connection Test</h1>
       
+      {error && (
+        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg">
+          <p className="text-red-400">Error: {error}</p>
+        </div>
+      )}
+      
       {loading ? (
-        <p>Testing database connection...</p>
+        <div>
+          <p className="mb-4">Testing database connection...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
       ) : (
         <div className="space-y-4">
-          {Object.entries(status).map(([key, value]: [string, any]) => (
-            <div key={key} className="bg-gray-800 p-4 rounded-lg">
-              <h2 className="text-lg font-semibold mb-2">{key}</h2>
-              <pre className="text-sm text-gray-300 overflow-auto">
-                {JSON.stringify(value, null, 2)}
-              </pre>
-            </div>
-          ))}
+          {Object.keys(status).length === 0 ? (
+            <p className="text-gray-400">No test results. Check browser console for errors.</p>
+          ) : (
+            Object.entries(status).map(([key, value]: [string, any]) => (
+              <div key={key} className="bg-gray-800 p-4 rounded-lg">
+                <h2 className="text-lg font-semibold mb-2">{key}</h2>
+                <pre className="text-sm text-gray-300 overflow-auto">
+                  {JSON.stringify(value, null, 2)}
+                </pre>
+              </div>
+            ))
+          )}
         </div>
       )}
 
       <button
         onClick={() => {
+          console.log('Rerunning tests...');
           setLoading(true);
           testDatabase();
         }}
@@ -143,6 +164,10 @@ export default function TestDatabasePage() {
       >
         Rerun Tests
       </button>
+      
+      <div className="mt-8 text-sm text-gray-400">
+        <p>Check browser console (F12) for detailed logs</p>
+      </div>
     </div>
   );
 }

@@ -62,7 +62,9 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
+  // Use getSession instead of getUser for better performance in middleware
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
 
   // Protected routes
   const protectedRoutes = ['/generator', '/projects', '/settings', '/profile'];
@@ -83,6 +85,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|test-.*|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

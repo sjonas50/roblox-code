@@ -29,9 +29,15 @@ export default function Header() {
   const handleSignOut = async () => {
     try {
       console.log('Signing out...');
+      
+      // Call the context signOut which handles Supabase signout
       await signOut();
-      // Force reload to clear any cached state
-      window.location.href = '/';
+      
+      // Small delay to ensure state updates
+      setTimeout(() => {
+        // Force reload to clear any cached state and redirect
+        window.location.href = '/';
+      }, 100);
     } catch (error) {
       console.error('Sign out error:', error);
       // Force logout even on error
