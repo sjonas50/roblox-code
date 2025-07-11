@@ -111,15 +111,16 @@ See individual project READMEs for detailed documentation:
 ### Build Configuration
 
 When deploying to Vercel:
-- Root Directory: `roblox-lovable-ui`
-- Framework: Next.js (auto-detected)
-- Build Command: `npm run vercel-build` (automatically handled)
+- **Root Directory**: `roblox-lovable-ui` (IMPORTANT: Set this in Vercel dashboard)
+- **Framework**: Next.js (auto-detected)
+- **Build Command**: (leave default - Vercel will use `npm run build`)
+- **Install Command**: (leave default - Vercel will use `npm install`)
 
-The build process:
-1. Installs and builds the `roblox-claude-codegen` backend package
-2. Builds the `roblox-lovable-ui` frontend that depends on it
+The `vercel-build` script in `roblox-lovable-ui/package.json` automatically:
+1. Builds the `roblox-claude-codegen` backend package first
+2. Then builds the frontend that depends on it
 
-Note: The `vercel-build` script in package.json handles building the backend dependency automatically.
+**Important**: Do NOT deploy from the repository root. Always set the Root Directory to `roblox-lovable-ui` in Vercel's project settings. This ensures Vercel correctly detects and deploys the Next.js application.
 
 ## License
 
