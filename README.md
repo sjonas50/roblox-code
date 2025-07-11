@@ -84,7 +84,7 @@ See individual project READMEs for detailed documentation:
    - Go to [vercel.com](https://vercel.com)
    - Click "New Project"
    - Import your Git repository
-   - Vercel will auto-detect the monorepo structure
+   - **Important**: Set the Root Directory to `roblox-lovable-ui`
    - Set the following environment variables:
      - `CLAUDE_API_KEY` - Your Anthropic API key
      - `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
@@ -110,14 +110,16 @@ See individual project READMEs for detailed documentation:
 
 ### Build Configuration
 
-The project is configured as a monorepo with:
-- Root build command: `npm run build`
-- Output directory: `roblox-lovable-ui/.next`
-- Framework: Next.js
+When deploying to Vercel:
+- Root Directory: `roblox-lovable-ui`
+- Framework: Next.js (auto-detected)
+- Build Command: `npm run vercel-build` (automatically handled)
 
 The build process:
-1. Builds the `roblox-claude-codegen` backend package
+1. Installs and builds the `roblox-claude-codegen` backend package
 2. Builds the `roblox-lovable-ui` frontend that depends on it
+
+Note: The `vercel-build` script in package.json handles building the backend dependency automatically.
 
 ## License
 

@@ -1,0 +1,23 @@
+{
+  "buildCommand": "npm run vercel-build",
+  "functions": {
+    "app/api/generate/route.ts": {
+      "maxDuration": 30
+    },
+    "app/api/generate-intelligent/route.ts": {
+      "maxDuration": 30
+    },
+    "app/api/generate-multi-agent/route.ts": {
+      "maxDuration": 30
+    },
+    "app/api/generate-direct/route.ts": {
+      "maxDuration": 30
+    },
+    "app/api/generate-v2/route.ts": {
+      "maxDuration": 30
+    },
+    "app/api/chat/route.ts": {
+      "maxDuration": 30
+    }
+  }
+}

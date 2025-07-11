@@ -4,9 +4,11 @@
   "main": "index.js",
   "scripts": {
     "dev": "next dev -p 3000",
+    "prebuild": "cd ../roblox-claude-codegen && npm install && npm run build",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "vercel-build": "npm run prebuild && npm run build"
   },
   "keywords": [],
   "author": "",
