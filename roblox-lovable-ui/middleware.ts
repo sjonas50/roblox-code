@@ -11,8 +11,10 @@ export async function middleware(request: NextRequest) {
 
   const currentPath = request.nextUrl.pathname;
   
-  // Skip middleware for auth pages and API routes
-  if (currentPath.startsWith('/auth/') || currentPath.startsWith('/api/')) {
+  // Skip middleware for auth pages, API routes, and test pages
+  if (currentPath.startsWith('/auth/') || 
+      currentPath.startsWith('/api/') || 
+      currentPath.startsWith('/test-')) {
     return response;
   }
 
@@ -62,8 +64,13 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Use getSession instead of getUser for better performance in middleware
-  const { data: { session } } = await supabase.auth.getSession();
+  // Refresh the session to ensure cookies are up to date
+  const { data: { session }, error } = await supabase.auth.getSession();
+  
+  if (error) {
+    console.error('Middleware auth error:', error);
+  }
+  
   const user = session?.user;
 
   // Protected routes

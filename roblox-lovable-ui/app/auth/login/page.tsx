@@ -1,17 +1,28 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { signIn, signInWithProvider } from '@/lib/auth/utils';
+import { signInWithProvider } from '@/lib/auth/utils';
+import { signInWithTimeout } from '@/lib/auth/auth-wrapper';
 import PublicLayout from '@/components/PublicLayout';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Redirect when user logs in
+  useEffect(() => {
+    if (user) {
+      console.log('User detected in LoginPage, redirecting...');
+      router.push('/generator');
+    }
+  }, [user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,36 +30,42 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      console.log('Attempting sign in...');
-      const { data, error } = await signIn(email, password);
+      console.log('Attempting sign in with email:', email);
       
-      if (error) {
-        console.error('Sign in error:', error);
-        setError(error.message);
-        setLoading(false);
-      } else if (data?.user) {
-        console.log('Sign in successful:', data.user.id);
-        console.log('Attempting redirect to /generator...');
-        // Force immediate redirect
-        setLoading(false);
+      // Use our wrapper that handles timeouts
+      const result = await signInWithTimeout(email, password, 3000);
+      console.log('Sign in result:', result);
+      
+      if (result.error?.code === 'TIMEOUT') {
+        // Authentication timed out but might have succeeded
+        console.log('Sign in timed out, authentication may have succeeded');
+        console.log('Forcing router refresh to detect session...');
         
-        // Try multiple redirect methods
-        try {
-          // Method 1: Next.js router
-          router.push('/generator');
-          console.log('router.push() called');
-          
-          // Method 2: Fallback with window.location
-          setTimeout(() => {
-            console.log('Fallback redirect triggered');
-            window.location.href = '/generator';
-          }, 500);
-        } catch (err) {
-          console.error('Redirect error:', err);
-          window.location.href = '/generator';
-        }
+        // Force router refresh to pick up any session that was created
+        router.refresh();
+        
+        // Show a message to the user
+        setError('Signing in... If you are not redirected, please refresh the page.');
+        
+        // Keep loading state true to prevent re-submission
+        // The useEffect will handle the redirect when user state updates
+      } else if (result.error) {
+        // Actual authentication error
+        console.error('Sign in error:', result.error);
+        setError(result.error.message);
+        setLoading(false);
+      } else if (result.data?.user) {
+        // Sign in completed successfully
+        console.log('Sign in successful!');
+        console.log('User:', result.data.user.email);
+        
+        // Force router refresh to ensure middleware picks up the session
+        router.refresh();
+        
+        // Keep loading state true
+        // The useEffect will handle redirect when user state updates
       } else {
-        console.error('No user data returned');
+        // No user data and no error
         setError('Sign in failed. Please try again.');
         setLoading(false);
       }

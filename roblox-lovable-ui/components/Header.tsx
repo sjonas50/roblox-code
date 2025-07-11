@@ -27,19 +27,13 @@ export default function Header() {
   };
 
   const handleSignOut = async () => {
-    try {
-      console.log('Signing out...');
-      
-      // Call the context signOut which handles Supabase signout
-      await signOut();
-      
-      // Force immediate redirect with replace to prevent back button issues
-      window.location.replace('/');
-    } catch (error) {
-      console.error('Sign out error:', error);
-      // Force logout even on error
-      window.location.replace('/force-logout');
-    }
+    console.log('Signing out...');
+    
+    // Don't wait for signOut to complete, just trigger it
+    signOut().catch(err => console.error('Sign out error:', err));
+    
+    // Immediately redirect
+    window.location.href = '/';
   };
 
   // Close user menu when clicking outside
