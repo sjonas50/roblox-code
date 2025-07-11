@@ -28,8 +28,25 @@ export default function LoginPage() {
         setLoading(false);
       } else if (data?.user) {
         console.log('Sign in successful:', data.user.id);
-        // Use window.location for a full page reload to ensure auth state updates
-        window.location.href = '/generator';
+        console.log('Attempting redirect to /generator...');
+        // Force immediate redirect
+        setLoading(false);
+        
+        // Try multiple redirect methods
+        try {
+          // Method 1: Next.js router
+          router.push('/generator');
+          console.log('router.push() called');
+          
+          // Method 2: Fallback with window.location
+          setTimeout(() => {
+            console.log('Fallback redirect triggered');
+            window.location.href = '/generator';
+          }, 500);
+        } catch (err) {
+          console.error('Redirect error:', err);
+          window.location.href = '/generator';
+        }
       } else {
         console.error('No user data returned');
         setError('Sign in failed. Please try again.');

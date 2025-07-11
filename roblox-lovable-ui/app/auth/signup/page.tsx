@@ -63,8 +63,12 @@ export default function SignUpPage() {
       setLoading(false);
     } else {
       console.log('Signup successful:', data.user.id);
-      // Show success message
+      // Force redirect to verify email page
       router.push('/auth/verify-email');
+      // Backup redirect
+      setTimeout(() => {
+        window.location.replace('/auth/verify-email');
+      }, 100);
     }
   };
 

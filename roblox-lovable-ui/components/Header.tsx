@@ -33,15 +33,12 @@ export default function Header() {
       // Call the context signOut which handles Supabase signout
       await signOut();
       
-      // Small delay to ensure state updates
-      setTimeout(() => {
-        // Force reload to clear any cached state and redirect
-        window.location.href = '/';
-      }, 100);
+      // Force immediate redirect with replace to prevent back button issues
+      window.location.replace('/');
     } catch (error) {
       console.error('Sign out error:', error);
       // Force logout even on error
-      window.location.href = '/force-logout';
+      window.location.replace('/force-logout');
     }
   };
 
