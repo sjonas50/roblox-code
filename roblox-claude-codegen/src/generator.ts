@@ -50,10 +50,6 @@ export async function generateRobloxCode(
     
     console.log('📤 Sending query to Claude Code SDK...');
     
-    // Use the local CLI if available
-    const localCliPath = path.join(__dirname, '..', 'node_modules', '@anthropic-ai', 'claude-code', 'cli.js');
-    console.log('🔍 Checking for local CLI at:', localCliPath);
-    
     const queryOptions: any = {
       maxTurns: options.maxTurns || 3,
       permissionMode: permissionMode as any,
@@ -61,11 +57,8 @@ export async function generateRobloxCode(
       cwd: options.cwd,
     };
     
-    // If local CLI exists, use it
-    if (require('fs').existsSync(localCliPath)) {
-      console.log('✅ Using local Claude Code CLI');
-      queryOptions.pathToClaudeCodeExecutable = localCliPath;
-    }
+    // Don't specify pathToClaudeCodeExecutable - let the SDK find it automatically
+    // This ensures it works in both development and production environments
     
     const queryIterator = query({
       prompt: fullPrompt,
