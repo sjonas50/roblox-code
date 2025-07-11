@@ -16,10 +16,20 @@ export class StorageAdapter {
 
   // Projects
   static async getAllProjects(): Promise<Project[]> {
-    if (await this.isAuthenticated()) {
-      return DatabaseService.getProjects();
+    try {
+      if (await this.isAuthenticated()) {
+        return DatabaseService.getProjects();
+      }
+      return ProjectStorageService.getAllProjects();
+    } catch (error) {
+      console.error('Error in StorageAdapter.getAllProjects:', {
+        error,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        authenticated: await this.isAuthenticated()
+      });
+      // Return empty array to prevent app crash
+      return [];
     }
-    return ProjectStorageService.getAllProjects();
   }
 
   static async getProject(id: string): Promise<Project | null> {
@@ -54,10 +64,21 @@ export class StorageAdapter {
 
   // Scripts
   static async getProjectScripts(projectId: string): Promise<Script[]> {
-    if (await this.isAuthenticated()) {
-      return DatabaseService.getScripts(projectId);
+    try {
+      if (await this.isAuthenticated()) {
+        return DatabaseService.getScripts(projectId);
+      }
+      return ProjectStorageService.getProjectScripts(projectId);
+    } catch (error) {
+      console.error('Error in StorageAdapter.getProjectScripts:', {
+        error,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        projectId,
+        authenticated: await this.isAuthenticated()
+      });
+      // Return empty array to prevent app crash
+      return [];
     }
-    return ProjectStorageService.getProjectScripts(projectId);
   }
 
   static async getScript(id: string): Promise<Script | null> {

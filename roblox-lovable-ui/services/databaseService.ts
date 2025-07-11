@@ -25,7 +25,12 @@ export class DatabaseService {
       .single();
 
     if (error) {
-      console.error('Error creating project:', error);
+      console.error('Error creating project:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint
+      });
       return null;
     }
 
@@ -43,7 +48,13 @@ export class DatabaseService {
       .order('updated_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching projects:', error);
+      console.error('Error fetching projects:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+        userId: user?.id
+      });
       return [];
     }
 
@@ -58,7 +69,13 @@ export class DatabaseService {
       .single();
 
     if (error) {
-      console.error('Error fetching project:', error);
+      console.error('Error fetching project:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+        projectId
+      });
       return null;
     }
 
@@ -126,7 +143,14 @@ export class DatabaseService {
       .single();
 
     if (error) {
-      console.error('Error creating script:', error);
+      console.error('Error creating script:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+        projectId,
+        scriptName: name
+      });
       return null;
     }
 
@@ -141,7 +165,13 @@ export class DatabaseService {
       .order('order_index', { ascending: true });
 
     if (error) {
-      console.error('Error fetching scripts:', error);
+      console.error('Error fetching scripts:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+        projectId
+      });
       return [];
     }
 

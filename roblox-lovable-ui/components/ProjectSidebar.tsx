@@ -38,13 +38,23 @@ export default function ProjectSidebar({
   }, [currentProject]);
 
   const loadProjects = async () => {
-    const allProjects = await StorageAdapter.getAllProjects();
-    setProjects(allProjects);
+    try {
+      const allProjects = await StorageAdapter.getAllProjects();
+      setProjects(allProjects);
+    } catch (error) {
+      console.error('Error loading projects:', error);
+      setProjects([]);
+    }
   };
 
   const loadProjectScripts = async (projectId: string) => {
-    const projectScripts = await StorageAdapter.getProjectScripts(projectId);
-    setScripts(projectScripts);
+    try {
+      const projectScripts = await StorageAdapter.getProjectScripts(projectId);
+      setScripts(projectScripts);
+    } catch (error) {
+      console.error('Error fetching scripts:', error);
+      setScripts([]);
+    }
   };
 
   const toggleProjectExpanded = (projectId: string) => {
